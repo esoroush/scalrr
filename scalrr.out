@@ -1,0 +1,36 @@
+Query:  select sum(data) from subarray(CCD,0,308250,276250,24,309250,277250) group by row,col <type 'str'>
+Language: aql <type 'str'>
+Executing Query  2013-07-02 11:46:19.498726
+Finished Executing Query  2013-07-02 11:47:26.973329
+Query:   <type 'str'>
+Language: aql <type 'str'>
+Executing Query  2013-07-02 11:47:26.973544
+Finished Executing Query  2013-07-02 11:47:26.974792
+Query:  select sum(data) from subarray(CCD,0,308250,276250,24,309250,277250) group by row,col <type 'str'>
+Language: aql <type 'str'>
+Executing Query  2013-07-02 11:47:48.733033
+Finished Executing Query  2013-07-02 11:48:57.591507
+Query:   <type 'str'>
+Language: aql <type 'str'>
+Executing Query  2013-07-02 11:48:57.591713
+Finished Executing Query  2013-07-02 11:48:57.592751
+Query:  subarray(CCD,0,308250,276250,24,309250,277250) group by row,col <type 'str'>
+Language: aql <type 'str'>
+Executing Query  2013-07-02 11:51:08.332935
+Finished Executing Query  2013-07-02 11:51:08.334041
+Query:  subarray(CCD,0,308250,276250,24,309250,277250) group by row,col <type 'str'>
+Language: aql <type 'str'>
+Executing Query  2013-07-02 11:51:12.055640
+Finished Executing Query  2013-07-02 11:51:12.056673
+Query:  subarray(CCD,0,308250,276250,24,309250,277250) group by row,col <type 'str'>
+Language: aql <type 'str'>
+Executing Query  2013-07-02 11:51:13.607537
+Finished Executing Query  2013-07-02 11:51:13.619138
+Query:  select sum(data) from subarray(CCD,0,307750,275750,24,308749,276749)  <type 'str'>
+Language: aql <type 'str'>
+Executing Query  2013-07-02 12:10:30.904123
+Finished Executing Query  2013-07-02 12:11:00.195382
+Parsing Query Result into NumPY Array:  2013-07-02 12:11:00.195433
+Dimensions
+    Dimension[0] = 0:0
+Array Dimensions:  [1L]

@@ -1,0 +1,29 @@
+/usr/local/bin/python2.7 -m cProfile scalrr_front.py
+
+
+DONE - Integrate itertive option in clearing the graph and or merging.
+
+Look into faster UI engine
+
+Update UI to not have all iteative buttons, just next and previous
+
+Consider moving to PyQT
+
+~change axis x and y to dim widths
+DONE - overlay the deltas
+DONE - move the stat handling to the backend and send it in the response
+configure apache to use mod_wsgi
+
+
+mplh5canvas - install all with pip
+	netifaces
+	mod_pywebsocket
+	mplh5canvas
+
+	
+store(project(aggregate(CCDF_SAMPLE_SUB2, avg(data), stdev(data),row,col),data_avg,data_stdev),T)
+store(cross_join(CCDF_SAMPLE_SUB2,T,CCDF_SAMPLE_SUB2.row,T.row,CCDF_SAMPLE_SUB2.col,T.col),subset_AUX)
+store(project(filter(subset_AUX,data >= (data_avg - 3 * data_stdev) and data <= (data_avg + 3 * data_stdev)),data),CCDF_SAMPLE_SUB2)
+aggregate(CCDF_SAMPLE_SUB2,sum(data),row,col)
+
+select sum(data) from CCDF_SAMPLE_SUB@1 group by row, col

@@ -1,0 +1,37 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../static/css/scalrr.css">
+	<link rel="stylesheet" type="text/css" href="../static/css/bootstrap.css">
+
+	<script type="text/javascript" src="../static/js/jquery.js" ></script>
+	<script type="text/javascript" src="../static/js/scalrr.js" ></script>	
+</head>
+
+
+<body>
+	<div id="ajax-laoding" class="hidden">
+		<img src="../static/img/ajax-loader.gif" />
+	</div>
+    <div id='query_form'>
+		<textarea id="query-text" name="text" placeholder="Write query here." rows="15" cols="200"></textarea>
+		<div>
+        	<input type="checkbox" id='iterative' />Iterative Query?
+    	</div>
+    	<div>
+    		<input id="afl" name="afl" type="radio" checked="checked" /> AFL Query
+			<input id="aql" name="afl" type="radio" /> AQL Query
+    	</div>
+		<input type="button" onclick='executeQuery()' value="Vis Query" />
+		<input type="button" onclick='executeTest()' value="Run LSST Test" />
+	</div>
+	<div id="plot">
+	    <img  id="plot_image" />
+	</div>
+	<div>
+		<input type="button" onclick='previousFigure()' value="Previous" />
+		<input type="button" onclick='nextFigure()' value="Next" />
+	</div>
+</body>
+
+
+</html>

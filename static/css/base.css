@@ -1,0 +1,132 @@
+
+text {
+	font-family: sans-serif;
+	font-size: 9pt;
+}
+.brush{
+	fill-opacity: 0;
+	fill: orange;
+	stroke: black;
+	shape-rendering: crispEdges;
+}
+
+circle {
+	fill-opacity: 0.8;
+}
+
+.bgcircle{
+	fill: black;
+
+}
+
+g {
+	border: none;
+	padding:0pxs;
+	margin:0px;
+}
+
+.selectionrect {
+	fill: ;
+}
+.legend {
+	padding-left: 50;
+	font-family: 'helvetica neue', helvetica, garamond, verdana;
+}
+.legend span {
+	padding-right: 10px;
+}
+
+div.xlabel, div.ylabel, div.zlabel {
+	margin: 10px;
+	text-align: center;
+}
+
+#rawdata {
+	height: 300px;
+	overflow-y: scroll;
+}
+
+.btn {
+	width: 100%;
+	margin: 5px;
+}
+
+.vtext {
+	-moz-transform: rotate(-90deg) translate(0, 100%);
+   -moz-transform-origin: 0% 100%;
+   -o-transform: rotate(-90deg) translate(0, 100%);
+   -o-transform-origin: 0% 100%;
+   -webkit-transform: rotate(-90deg) translate(0, 100%);
+   -webkit-transform-origin: 0% 100%;
+   transform: rotate(-90deg) translate(0, 100%);
+   transform-origin: 0% 100%;
+}
+
+#sql-query-text {
+	display: block;
+}
+
+#reduce-type-form, #reduce-type-form-submit {
+	visibility: hidden;
+}
+
+.ui-dialog-titlebar-close {
+	visibility: hidden;
+}
+
+g.xaxis path,g.yaxis path {
+	display: none;
+}
+
+.xaxis line, .yaxis line {
+	opacity: .3;
+	stroke: #000;
+}
+
+.stations, .stations svg {
+  position: absolute;
+}
+
+.stations circle {
+	opacity: .4;
+/*
+  fill: brown;
+  stroke: black;
+  stroke-width: 1.5px;
+*/
+}
+
+/* For controlling filter predicate field in reduce res dialogue */
+#reduce-type-special div {
+	visibility: hidden;
+}
+
+#reduce-type-special.FILTER #filter-spec {
+	visibility: visible;
+}
+
+#vis-type-menu {
+	display: block;
+}
+
+#resulting-plot-header {
+	visibility: hidden;
+}
+
+#resulting-plot-header.show {
+	visibility: visible;
+}
+
+/*
+This is for the brush
+*/
+rect.extent {
+    fill: #000000;
+    fill-opacity: 0.125;
+    stroke: #FFFFFF;
+}
+rect.frame {
+    fill: #FFFFFF;
+    fill-opacity: 0.7;
+    stroke: #AAAAAA;
+}

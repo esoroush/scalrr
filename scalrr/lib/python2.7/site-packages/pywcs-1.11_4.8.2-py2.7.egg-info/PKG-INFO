@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: pywcs
+Version: 1.11-4.8.2
+Summary: Python wrappers to WCSLIB
+Home-page: http://projects.scipy.org/astropy/astrolib/wiki/WikiStart
+Author: Michael Droettboom
+Author-email: mdroe@stsci.edu
+License: UNKNOWN
+Description: UNKNOWN
+Platform: unix
+Platform: windows

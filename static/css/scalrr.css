@@ -1,0 +1,17 @@
+#form {
+    
+}
+
+.hidden {
+    display: none;
+}
+
+#query_form {
+    width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#ajax-laoding {
+	float: right;
+}

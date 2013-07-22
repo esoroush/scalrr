@@ -1,0 +1,4 @@
+[console_scripts]
+fitsdiff = pyfits.scripts.fitsdiff:main
+fitscheck = pyfits.scripts.fitscheck:main
+

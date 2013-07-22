@@ -1,0 +1,80 @@
+ * Running on http://vega.cs.washington.edu:5551/
+ * Restarting with reloader
+Query:  select sum(data) from subarray(CCD,0,308750,276750,24,309749,277249) group by row,col <type 'str'>
+Language: aql <type 'str'>
+Executing Query  2013-07-03 12:30:54.504103
+Finished Executing Query  2013-07-03 12:31:47.202797
+Parsing Query Result into NumPY Array:  2013-07-03 12:31:47.202855
+Dimensions
+    Dimension[0] = 0:999
+    Dimension[1] = 0:499
+Array Dimensions:  [1000L, 500L]
+Getting iterator for attribute 0, chunk 0. 2013-07-03 12:31:47.224848
+Getting iterator for attribute 0, chunk 1. 2013-07-03 12:31:47.342034
+Getting iterator for attribute 0, chunk 2. 2013-07-03 12:31:47.457040
+Getting iterator for attribute 0, chunk 3. 2013-07-03 12:31:47.571971
+Getting iterator for attribute 0, chunk 4. 2013-07-03 12:31:47.686637
+Getting iterator for attribute 0, chunk 5. 2013-07-03 12:31:47.801308
+Getting iterator for attribute 0, chunk 6. 2013-07-03 12:31:47.915352
+Getting iterator for attribute 0, chunk 7. 2013-07-03 12:31:48.031016
+Getting iterator for attribute 0, chunk 8. 2013-07-03 12:31:48.145991
+Getting iterator for attribute 0, chunk 9. 2013-07-03 12:31:48.259983
+Getting iterator for attribute 0, chunk 10. 2013-07-03 12:31:48.375693
+Getting iterator for attribute 0, chunk 11. 2013-07-03 12:31:48.490112
+Getting iterator for attribute 0, chunk 12. 2013-07-03 12:31:48.605763
+Getting iterator for attribute 0, chunk 13. 2013-07-03 12:31:48.720384
+Getting iterator for attribute 0, chunk 14. 2013-07-03 12:31:48.834354
+Getting iterator for attribute 0, chunk 15. 2013-07-03 12:31:48.949109
+Getting iterator for attribute 0, chunk 16. 2013-07-03 12:31:49.065102
+Getting iterator for attribute 0, chunk 17. 2013-07-03 12:31:49.180664
+Getting iterator for attribute 0, chunk 18. 2013-07-03 12:31:49.295526
+Getting iterator for attribute 0, chunk 19. 2013-07-03 12:31:49.410184
+Getting iterator for attribute 0, chunk 20. 2013-07-03 12:31:49.524414
+Getting iterator for attribute 0, chunk 21. 2013-07-03 12:31:49.638589
+Getting iterator for attribute 0, chunk 22. 2013-07-03 12:31:49.754586
+Getting iterator for attribute 0, chunk 23. 2013-07-03 12:31:49.868409
+Getting iterator for attribute 0, chunk 24. 2013-07-03 12:31:49.983540
+Getting iterator for attribute 0, chunk 25. 2013-07-03 12:31:50.098489
+Getting iterator for attribute 0, chunk 26. 2013-07-03 12:31:50.214256
+Getting iterator for attribute 0, chunk 27. 2013-07-03 12:31:50.329572
+Getting iterator for attribute 0, chunk 28. 2013-07-03 12:31:50.445259
+Getting iterator for attribute 0, chunk 29. 2013-07-03 12:31:50.559371
+Getting iterator for attribute 0, chunk 30. 2013-07-03 12:31:50.675000
+Getting iterator for attribute 0, chunk 31. 2013-07-03 12:31:50.790455
+Getting iterator for attribute 0, chunk 32. 2013-07-03 12:31:50.906523
+Getting iterator for attribute 0, chunk 33. 2013-07-03 12:31:51.020859
+Getting iterator for attribute 0, chunk 34. 2013-07-03 12:31:51.135672
+Getting iterator for attribute 0, chunk 35. 2013-07-03 12:31:51.249927
+Getting iterator for attribute 0, chunk 36. 2013-07-03 12:31:51.364382
+Getting iterator for attribute 0, chunk 37. 2013-07-03 12:31:51.478759
+Getting iterator for attribute 0, chunk 38. 2013-07-03 12:31:51.592472
+Getting iterator for attribute 0, chunk 39. 2013-07-03 12:31:51.708018
+Getting iterator for attribute 0, chunk 40. 2013-07-03 12:31:51.822046
+Getting iterator for attribute 0, chunk 41. 2013-07-03 12:31:51.936121
+Getting iterator for attribute 0, chunk 42. 2013-07-03 12:31:52.050807
+Getting iterator for attribute 0, chunk 43. 2013-07-03 12:31:52.164315
+Getting iterator for attribute 0, chunk 44. 2013-07-03 12:31:52.279395
+Getting iterator for attribute 0, chunk 45. 2013-07-03 12:31:52.393313
+Getting iterator for attribute 0, chunk 46. 2013-07-03 12:31:52.509095
+Getting iterator for attribute 0, chunk 47. 2013-07-03 12:31:52.622876
+Getting iterator for attribute 0, chunk 48. 2013-07-03 12:31:52.737437
+Getting iterator for attribute 0, chunk 49. 2013-07-03 12:31:52.851925
+zmin -10.2273119539
+zmax 15558.4193115
+Done Parsing Query Result into NumPY Array. 2013-07-03 12:31:52.977427
+NumPY Array:  [[-1.09741816 -0.46229961  1.43984693 ..174.61.182.146 - - [03/Jul/2013 12:31:53] "GET /process/query/fits/?callback=jQuery18101457909771706909_1372879790108&language=aql&query=select+sum(data)+from+subarray(CCD%2C0%2C308750%2C276750%2C24%2C309749%2C277249)+group+by+row%2Ccol&iterative=false&iteration=0&z_scale=false&z_value=&_=1372879854427 HTTP/1.1" 200 -
+128.208.3.110 - - [03/Jul/2013 12:31:53] "GET /get/1ed9beb86a4549f9a86b3b8d842b91d7.fits HTTP/1.1" 200 -
+128.208.3.110 - - [03/Jul/2013 12:31:53] "GET /get/1ed9beb86a4549f9a86b3b8d842b91d7.fits HTTP/1.1" 200 -
+., -2.91713868  6.50969226
+   1.01513997]
+ [-0.0821233  -1.4312527   0.35436998 ...,  1.21260476  2.93641083
+   1.80054799]
+ [ 0.38617861  1.67445798  1.49142478 ...,  2.39397862  4.86719805
+  -2.03676227]
+ ..., 
+ [ 0.15271872  2.79673467  1.19662912 ..., -0.59114155 -1.77447011
+  -2.68739397]
+ [-0.58443297  1.58817951  1.31764777 ..., -3.63741467 -0.21270945
+  -1.3250985 ]
+ [-1.72722971  3.05028972 -2.61093874 ..., -2.75383976  3.30998262
+  -3.14948388]]
