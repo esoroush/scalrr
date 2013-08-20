@@ -26,6 +26,30 @@ default_StartingZ = 0
 def index():
     return render_template('index.html') 
 
+@app.route('/purge/database/', methods=['GET','POST'])
+def purge_database():
+    print "@/purge/database"
+    query_text  = request.args['query']
+    language = request.args['language']
+    callback = request.args['callback']
+    db_interface.connect()
+    db_interface.removeQuery('sub_arr')
+    db_interface.removeQuery('_sub_arr')
+    db_interface.removeQuery('cooked')
+    db_interface.removeQuery('_SUM_COUNT_TEMP')
+    db_interface.removeQuery('T')
+    db_interface.disconnect()
+    
+    json_message = {
+                    'request': request.json,
+                    'status': 'OK',
+                    }
+    message = callback + "(" + json.dumps(json_message) + ")"
+    response = make_response(message)
+    response.headers['Access-Control-Allow-Origin'] = "*"
+
+    return response
+    
 @app.route('/process/timeseries/', methods=['GET'])
 def process_timeseries():
     query_text  = request.args['query']
@@ -35,7 +59,7 @@ def process_timeseries():
     
     db_interface.connect()
     
-    query_result = db_interface.executeQuery(str(query_text), str(language))
+    query_result = db_interface.executeQuery(str(query_text), str(language),False,False)
     if query_result is None: # error processing query
         return make_response(json.dumps({
                     'request': request.json,
@@ -44,7 +68,7 @@ def process_timeseries():
                     }))
         
     data_json = db_interface.getDataInJson(query_result)
-    
+    db_interface.completeQuery(query_result.queryID)
     db_interface.disconnect()
     
     # Make response
@@ -139,13 +163,17 @@ def process_query_image():
 
 @app.route('/process/query/fits/', methods=['GET'])
 def process_query_fits():
+    print "@/process/query/fits/"
     query_text  = str(request.args['query'])
     iterative = request.args['iterative']
+    iteration = 1
+    if iterative == "true":
+    	iteration = request.args['iteration']
     language = str(request.args['language'])
     callback = request.args['callback']
-    
-    if iterative:
-        query_text = request.args['query'].replace("@","@"+str(request.args['iteration']))
+    print "iteration:",iteration 
+    #if iterative:
+    #    query_text = request.args['query'].replace("@","@"+str(request.args['iteration']))
     
     query_lines = query_text.split("\n")
     try:
@@ -157,13 +185,25 @@ def process_query_fits():
                     'message': "unable to connect to SciDB",
                     })
         return make_response(callback + "(" + message + ")")
-
-    # process all queries except for the last one
-    for query_line in query_lines[:-1]: # process all lines except the last one
-        db_interface.executeQuery(str(query_line), str(language))
-
+    #process the first query
+    #find the subarray part of the query
+    queryExecutionTime = 0
+    query_line_aligned = db_interface.alignQuery(str(query_lines[0]))  
+    if query_line_aligned['done'] == True:
+    	print "first line query:",query_lines[0]
+    	result_one = db_interface.executeQuery(str(query_lines[0]), str(language))
+    	queryExecutionTime += int(result_one.executionTime)
+	print "time:",queryExecutionTime
+    # process from the second queriy until the last one
+    for index in range(0,int(iteration)): 
+        for query_line in query_lines[1:-1]: # process all lines except the last one
+	   	print "iterative query:",query_line
+		result_one = db_interface.executeQuery(str(query_line), str(language))
+		queryExecutionTime += int(result_one.executionTime)
+		print "time:",queryExecutionTime
     # process last query
-    query_result = db_interface.executeQuery(str(query_lines[-1]), str(language))
+    print "last query:",query_lines[-1]
+    query_result = db_interface.executeQuery(str(query_lines[-1]), str(language),True,False)
     if query_result is None: # error processing query
         message = json.dumps({
                     'request': request.json,
@@ -171,8 +211,11 @@ def process_query_fits():
                     'message': "error processing query", 
                     })
         return make_response(callback + "(" + message + ")")
-
-    data_array, array_dim = db_interface.getFirstAttrArrFromQueryInNumPY(query_result)
+    queryExecutionTime += int(query_result.executionTime)
+    if query_line_aligned['done'] == True:
+    	data_array, array_dim = db_interface.getFirstAttrArrFromQueryInNumPY(query_result,[query_line_aligned['old_row'],query_line_aligned['old_col']],True)
+    else:
+	data_array, array_dim = db_interface.getFirstAttrArrFromQueryInNumPY(query_result,[0,0],False)
     db_interface.disconnect()
     
     filename = uuid.uuid4().hex + ".fits"
@@ -183,7 +226,9 @@ def process_query_fits():
         wcs.wcs.crpix = [440250-(int(sub_arr[3])-259750), 353595-(int(sub_arr[2])-247750)]
 	#wcs.wcs.crpix = [440250-(int(sub_arr[3])-260250), 353595-(int(sub_arr[2])-248250)]
     except:
-        wcs.wcs.crpix = [440250, 353595]
+    	sub_arr = query_text.split("between")[1].split(",")
+        wcs.wcs.crpix = [440250-(int(sub_arr[3])-259750), 353595-(int(sub_arr[2])-247750)]
+
     wcs.wcs.cd = numpy.array([-.0000555555555, 0, 0, .000055555555]).reshape([2,2])
     wcs.wcs.crval = [60, 10.8123169635717]
     wcs.wcs.ctype = ["RA---STG", "DEC--STG"]
@@ -195,9 +240,11 @@ def process_query_fits():
         header.update("AbsPixY", int(sub_arr[3]))
         header.update("AbsPixZ", int(sub_arr[1]))
     except:
-        header.update("AbsPixX", default_StartingX)
-        header.update("AbsPixY", default_StartingY)
-        header.update("AbsPixZ", default_StartingZ)
+    	sub_arr = query_text.split("between")[1].split(",")
+        header.update("AbsPixX", int(sub_arr[2]))
+        header.update("AbsPixY", int(sub_arr[3]))
+        header.update("AbsPixZ", int(sub_arr[1]))
+
     header.update("CD1_2", 0)
     header.update("CD2_1", 0)
     header.update("CD1_1", -0.0000555555555)
@@ -207,11 +254,12 @@ def process_query_fits():
     hdu.writeto(filename)
     
     #encoded_fits = base64.b64encode(output.getvalue())
-
+    print "time:",queryExecutionTime
     # Make response
     json_message = {
                     'request': request.args,
                     'status': 'OK',
+		    'time': queryExecutionTime,	
                     'fits_file': filename
                     }
 

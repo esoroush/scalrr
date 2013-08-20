@@ -1,19 +1,20 @@
 import sys
 import re
-sys.path.append('/project/db1/scidb_12_10/lib/')
+import StringIO
+sys.path.append('/project/db1/scidb_12_10_iteration/lib/')
 #sys.path.append('/projects/db8/build/lib/')
 #sys.path.append('/projects/db8/build/bin/')
 import scidbapi as scidb
 import numpy
-
+import ctypes
 from datetime import datetime
 
 
 db = None
-
+TILE_SIZE = 100
 def connect():
 	global db
-	db = scidb.connect("vega.cs.washington.edu", 9268)
+	db = scidb.connect("vega.cs.washington.edu", 5555)
 
 def disconnect():
 	global db
@@ -24,7 +25,91 @@ def disconnect():
 def completeQuery(query_id):
 	db.completeQuery(query_id)
 
-def executeQuery(query, language="aql"):
+
+def assignmentToStore(query):
+        result = []
+        query_split = re.split('\[|\]',query)
+        if len(query_split) == 1:
+                return query
+        name = query_split[0].split("=")
+        body = query_split[1].split("from")
+        result.append(body[0])
+
+        result.append(" into ")
+        result.append(name[0])
+        result.append(" from ")
+        result.append(body[1])
+        return ''.join(result)
+
+
+def alignQuery(query_text):
+	print "**** align query ****:", query_text, type(query_text)
+	try:
+        	trans_query = []
+		sub_arr = query_text.split("subarray")
+		between = False
+		if len(sub_arr) == 1:
+			sub_arr = query_text.split("between")
+			
+			if len(sub_arr) == 1:
+				return {'query':query_text,'done':False}
+			else:
+				between = True
+	
+		trans_query.append(sub_arr[0])
+		if between == True:
+			trans_query.append("between")
+		else:
+			trans_query.append("subarray")
+		param_array = re.split(',|\)',sub_arr[1],7)
+		print param_array
+		trans_query.append(param_array[0])
+		trans_query.append(",")
+		trans_query.append(param_array[1])
+		trans_query.append(",")
+		trans_query.append(str(int(param_array[2])-247750))
+		trans_query.append(",")
+		trans_query.append(str(int(param_array[3])-259750))
+		trans_query.append(",")
+		trans_query.append(param_array[4])
+		trans_query.append(",")
+		remainder_1 = (int(param_array[5]) - int(param_array[2]) + 1) % 10 
+		remainder_2 = (int(param_array[6]) - int(param_array[3]) + 1) % 10 
+		print remainder_1
+		print remainder_2
+		if remainder_1 != 0:
+			new_param1 = int(param_array[5]) - 247750 + (10 -int(remainder_1))
+		else:
+			new_param1 = int(param_array[5]) - 247750
+		
+		if remainder_2 != 0:
+			new_param2 = int(param_array[6]) - 259750 +(10 -int(remainder_2))
+		else:
+			new_param2 = int(param_array[6]) - 259750
+
+		print new_param1,new_param2
+		trans_query.append(str(new_param1))
+		trans_query.append(",")
+		trans_query.append(str(new_param2))
+		trans_query.append(")")
+		trans_query.append(param_array[7])    
+		new_query = ''.join(trans_query)
+		return {'query':new_query,'old_row':remainder_1,'old_col':remainder_2,'done':True} 
+	except:	
+		print "query cannot be translated:", query_text, type(query_text)
+		print trans_query
+		return query_text
+def removeQuery(array_name):
+	print "remove array:", array_name
+	global db
+	try:
+		query = "remove("+array_name+")"
+	        return_ans = db.executeQuery(query, "afl")
+		db.completeQuery(return_ans.queryID)
+	except:
+		print "array "+array_name+" does not exist"
+		
+def executeQuery(query, language="aql",alignment=True,complete=True):
 	print "Query: ", query, type(query)
 	print "Language:", language, type(language)
 	print "Executing Query ", datetime.now()
@@ -35,17 +120,28 @@ def executeQuery(query, language="aql"):
 	try:
 		#queryplan = queryAnalysis(query, language)
 		#return parseQueryPlan(queryplan) #returns a dictionary
-		
-		query_result = db.executeQuery(query, language)
-		
-		return_ans = query_result
-	except:
+		query1 = None
+		if language == "aql":
+			query1 = assignmentToStore(query)
+		else:
+			query1 = query
+		print "assignmentToStore:",query1
+		#if alignment == True:
+		query_translate = alignQuery(query1)		
+		return_ans = db.executeQuery(query_translate['query'], language)
+		#else:
+		#	return_ans = db.executeQuery(query1, language)
+	        if complete == True:	
+			db.completeQuery(return_ans.queryID)
+        except:
+	#except Exception, inst:
+		#handleException(inst, language, op= "Executing query: " + query)
 		return_ans = None
 
 	print "Finished Executing Query ", datetime.now()
 
 	return return_ans
-
+	
 def getDataInJson(query_result):
 	print  "Parsing query result into JSON", datetime.now()
 
@@ -113,35 +209,43 @@ def getDataInJson(query_result):
 	
 	return {'data':arr, 'names': namesobj, 'types': typesobj}
 
-def getFirstAttrArrFromQueryInNumPY(query_result):
+def getFirstAttrArrFromQueryInNumPY(query_result,alignment,hack=False):
 	print "Parsing Query Result into NumPY Array: ", datetime.now()
-	
+        global TILE_SIZE	
 	desc = query_result.array.getArrayDesc()
 	
 	dims = desc.getDimensions()
 	attrs = desc.getAttributes()
-	
 	array_dim_length = []
 	array_dim = []
+	chunkInterval = []
 	print "Dimensions"
-	offset = [];
+	offset = []
+	end = []
 	for i in range (dims.size()):
 		start = dims[i].getCurrStart()
-		end = dims[i].getCurrEnd()
+		end.append(dims[i].getCurrEnd())
+		chunkInterval.append(dims[i].getChunkInterval())
 		offset.append(start)
-		print "    Dimension[%d] = %d:%d" % (i, start, end)
-		array_dim_length.append(end - start + 1)
-		array_dim.append([start, end])
-	
+		print "    Dimension[%d] = %d:%d" % (i, start, end[i])
+		
+		array_dim_length.append(end[i] - int(alignment[i])  - start + 1)    # hack for demo 
+		#array_dim_length.append(end  - start + 1)
+		array_dim.append([start, end[i]])
+	print "Chunk Interval:", chunkInterval
 	print "Array Dimensions: ", array_dim_length
+	print "alignment:",alignment
+	print "end:",end 
 	#array_dim_length = [4250,4250]	
 	# make the data array
-	data_array = numpy.empty([array_dim_length[0], array_dim_length[1]], order='F')
+	data_array = numpy.empty([array_dim_length[0], array_dim_length[1]], order='C')
 	#data_array[:] = None
+
 	
 	iters = []
 	for i in range (attrs.size()): 
 		attrid = attrs[i].getId()
+		print "attrid:",attrid
 		iters.append(query_result.array.getConstIterator(attrid))
 
 	num_chunk = 0
@@ -150,24 +254,110 @@ def getFirstAttrArrFromQueryInNumPY(query_result):
 		for i in range (attrs.size()):
 			if (attrs[i].getName() == "EmptyTag"):
 				continue
-			
+			attType = attrs[i].getType()
 			print "Getting iterator for attribute %d, chunk %d." % (i, num_chunk), datetime.now()
-			currentchunk = iters[i].getChunk()
-			chunkiter = currentchunk.getConstIterator((scidb.swig.ConstChunkIterator.IGNORE_OVERLAPS)|(scidb.swig.ConstChunkIterator.IGNORE_EMPTY_CELLS))
-		
-			while not chunkiter.end():
-				if not chunkiter.isEmpty(): 
-					dataitem = chunkiter.getItem()
-					position = chunkiter.getPosition()
-					#print "Position ", position[0]
-					data_array[position[0]-offset[0], position[1]-offset[1]] = scidb.getTypedValue(dataitem, attrs[i].getType())
-					
-				chunkiter.increment_to_next()
 
+			currentchunk = iters[i].getChunk()
+			emptychunk = iters[attrs.size()-1].getChunk()
+			
+			currentdata = currentchunk.dump()
+			emptydata = emptychunk.dump()
+			
+			print type(currentdata)
+			print type(emptydata)
+			
+			currentCount = currentchunk.count()
+			emptyCount = emptychunk.count()
+
+			current_buf_type = ctypes.c_char * currentCount * 8
+			empty_buf_type = ctypes.c_char * (emptyCount)
+			
+			current_address = long(currentdata)
+		        empty_address = long(emptydata)
+
+			print current_address," ",currentCount
+			print empty_address," ",emptyCount
+			
+			lowPosition = currentchunk.getLowBoundary(False)
+			highPosition = currentchunk.getHighBoundary(False)
+		        logicalChunkSize = [highPosition[0]-lowPosition[0]+1,highPosition[1]-lowPosition[1]+1]	
+			print "logicalChunkSize:",logicalChunkSize
+			nika_array = numpy.ndarray(shape=(logicalChunkSize[0],logicalChunkSize[1]), dtype=numpy.dtype(float),buffer=current_buf_type.from_address(current_address))
+			empty_array = numpy.ndarray(emptyCount, dtype=numpy.dtype(bool),buffer=empty_buf_type.from_address(empty_address))
+			
+			highPos = [0,0]
+                        highPos[0] = min(highPosition[0]-offset[0],array_dim_length[0]-1)
+                        highPos[1] = min(highPosition[1]-offset[1],array_dim_length[1]-1)
+
+			lowPos = [0,0]
+                        lowPos[0] = lowPosition[0]-offset[0]
+                        lowPos[1] = lowPosition[1]-offset[1]
+
+			logicalChunkSize = [highPos[0]-lowPos[0]+1,highPos[1]-lowPos[1]+1]	
+			
+			print lowPos," ",highPos
+			#print nika_array
+			#print empty_array
+
+			#chunkiter = currentchunk.getConstIterator((scidb.swig.ConstChunkIterator.IGNORE_OVERLAPS)|(scidb.swig.ConstChunkIterator.IGNORE_EMPTY_CELLS))
+			#remainder  = position[1] % chunkInterval[1]
+			
+			#threshold = min(position[1] + (chunkInterval[1] - remainder - 1),end[1])
+			#print "threshold:",threshold	
+			#origPosition = position[1]
+			#threshold -= offset[1]
+			#emptychunkiter = emptychunk.getConstIterator((scidb.swig.ConstChunkIterator.TILE_MODE)|(scidb.swig.ConstChunkIterator.IGNORE_OVERLAPS)|(scidb.swig.ConstChunkIterator.IGNORE_EMPTY_CELLS))
+			
+			if hack == True:
+				print "nika array:",nika_array.shape
+				print "data array:",data_array.shape
+				print "logicalchunkSize:",logicalChunkSize
+				print "array dim length:",array_dim_length
+					
+				data_array[lowPos[0]:highPos[0]+1,lowPos[1]:highPos[1]+1] = nika_array[0:logicalChunkSize[0],0:logicalChunkSize[1]]
+				#current_index = 0
+				#for ei in empty_array:
+				#   if ei:
+				#	if (position[0]) <  array_dim_length[0] and (position[1]) <  array_dim_length[1]: 
+				#		data_array[position[0], position[1]] = nika_array[current_index]
+				#	current_index += 1
+				#
+				#   position[1] += 1
+				#   if position[1] > threshold:
+				#	position[1] = origPosition
+				#	position[0]+=1
+				#print data_array	
+				
+				#while not chunkiter.end():
+                                        #if not chunkiter.isEmpty(): 
+                                        #dataitem = chunkiter.getItem()
+                                        #position = chunkiter.getPosition()
+                                        #if (position[0]-offset[0]) < array_dim_length[0] and (position[1]-offset[1]) < array_dim_length[1]: 
+					#	data_array[position[0]-offset[0], position[1]-offset[1]] = scidb.getTypedValue(dataitem,attType)
+                                        #chunkiter.increment_to_next()
+	
+		        else:
+			       	current_index = 0
+                                for ei in empty_array:
+                                   if ei == True:
+                                        data_array[position[0]-offset[0], position[1]-offset[1]] = float(nika_array[current_index])
+                                        current_index += 1
+
+                                   position[1] += 1
+                                   if (position[1] % chunkInterval[1] == 0) or (position[1] > end[1]):
+                                        position[1] = origPosition
+                                        position[0]+=1
+
+				#while not chunkiter.end():
+                                        #if not chunkiter.isEmpty(): 
+                                        #dataitem = chunkiter.getItem()
+                                        #position = chunkiter.getPosition()
+                                        #data_array[position[0]-offset[0], position[1]-offset[1]] = scidb.getTypedValue(dataitem,attType)
+                                        #chunkiter.increment_to_next()
+	
 		num_chunk += 1;
 		for i in range(attrs.size()):
 			iters[i].increment_to_next();
-	
 	zmin = numpy.nanmin(data_array)
 	zmax = numpy.nanmax(data_array)
 	array_dim.append([zmin, zmax])
@@ -175,7 +365,7 @@ def getFirstAttrArrFromQueryInNumPY(query_result):
 	print "zmax", zmax
 	
 	print "Done Parsing Query Result into NumPY Array.", datetime.now()
-	print "NumPY Array: ", data_array
+	#print "NumPY Array: ", data_array
 	return data_array, array_dim;
 
 
